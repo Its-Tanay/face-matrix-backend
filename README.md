@@ -148,10 +148,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 4. Push to the branch (`git push origin username/feature`)
 5. Open a Merge Request
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## Acknowledgments
 
 - [FaceNet PyTorch](https://github.com/timesler/facenet-pytorch) for MTCNN and InceptionResnetV1 implementations

@@ -4,6 +4,8 @@ from pgvector.psycopg2 import register_vector
 import numpy as np
 from typing import Optional, Dict, Any
 from contextlib import contextmanager
+
+import psycopg2.pool
 from exception.exceptions import ServiceUnavailable
 
 class Database:
@@ -14,7 +16,10 @@ class Database:
     @contextmanager
     def get_connection(self):
         try:
-            conn = psycopg2.connect(self.connection_string)
+            pool = psycopg2.pool.ThreadedConnectionPool(
+                4, 10, self.connection_string
+            )
+            conn = pool.getconn()
             register_vector(conn) 
             yield conn
         except Exception as e:

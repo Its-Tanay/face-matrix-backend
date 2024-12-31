@@ -101,7 +101,7 @@ docker run -p 8000:8000 \
 
 ```
 face-recognition-system/
-├── app/
+├── src/
 │   ├── services/
 │   │   ├── faceDetectionService.py
 │   │   ├── featureExtractionService.py
@@ -116,9 +116,15 @@ face-recognition-system/
 │   │   ├── db.py
 │   │   └── userSchema.py
 │   └── exception/
-│       └── exceptions.py
+│   │   └── exceptions.py
+│   └── tests/
+│       └── test_face_detection.py
+|       └── test_features_extraction.py
+|       └── test_similarity_search.py
+|       └── test_user_management.py
 ├── main.py
 ├── requirements.txt
+├── .gitlab-cli.yml
 └── Dockerfile
 ```
 

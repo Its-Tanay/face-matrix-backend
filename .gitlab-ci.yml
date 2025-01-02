@@ -15,7 +15,6 @@ build_image:
   script:
     - echo "Building Docker image..."
     - docker build -t $ECR_URI:$IMAGE_TAG .
-  when: on_failure
 
 push_image:
   stage: push
@@ -27,15 +26,14 @@ push_image:
     - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_URI
     - echo "Pushing Docker image to ECR..."
     - docker push $ECR_URI:$IMAGE_TAG
-  when: on_failure 
 
 cleanup:
   stage: cleanup
   tags:
-    - your-runner-tag 
+    - dev-runner
+    - shell  
   script:
     - echo "Cleaning up Docker resources..."
-    - docker rmi $ECR_URI:$IMAGE_TAG || true  
-    - docker system prune -f || true        
-  only:
-    - always
+    - docker rmi $ECR_URI:$IMAGE_TAG || true
+    - docker system prune -f || true
+  when: always

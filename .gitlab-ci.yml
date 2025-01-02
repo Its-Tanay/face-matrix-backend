@@ -4,7 +4,7 @@ stages:
   - cleanup
 
 variables:
-  ECR_URI: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/my-repo
+  ECR_URI: 497863501987.dkr.ecr.ap-south-1.amazonaws.com/dev/face-matrix/api
   IMAGE_TAG: latest
 
 build_image:

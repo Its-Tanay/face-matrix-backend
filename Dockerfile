@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.9.6
 
 EXPOSE 8000
 
@@ -9,6 +9,9 @@ WORKDIR /facial-recognition-backend
 
 COPY ./requirements.txt /requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r /requirements.txt
+RUN apt-get update \
+    && pip3 install --upgrade pip
+
+RUN pip3 install --no-cache-dir --upgrade -r /requirements.txt
 
 COPY ./src /facial-recognition-backend/src

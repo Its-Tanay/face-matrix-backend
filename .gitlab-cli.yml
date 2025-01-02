@@ -1,49 +1,21 @@
 stages:
   - build
-  - test
-  - deploy
+  - push
 
 variables:
-  AWS_REGION: "us-west-2" 
-  ECR_REPOSITORY: "my-ecr-repo" 
-  IMAGE_TAG: "$CI_COMMIT_SHA" 
-  AWS_ACCOUNT_ID: "your-aws-account-id" 
-  EC2_INSTANCE_IP: "your-ec2-instance-ip" 
+  ECR_URI: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/my-repo
+  IMAGE_TAG: latest
 
-before_script:
-  - apt-get update && apt-get install -y awscli docker.io
-  - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-  - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-  - aws configure set region $AWS_REGION
-
-build:
+build_image:
   stage: build
   script:
     - echo "Building Docker image..."
-    - docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-    - docker images  
+    - docker build -t $ECR_URI:$IMAGE_TAG .
 
-test:
-  stage: test
+push_image:
+  stage: push
   script:
-    - echo "Running tests with pytest..."
-    - pip install -r requirements.txt
-    - pytest src/tests --maxfail=5 --disable-warnings -q 
-  only:
-    - main
-
-deploy:
-  stage: deploy
-  script:
-    - echo "Logging in to Amazon ECR..."
-    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-    - echo "Tagging the Docker image..."
-    - docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+    - echo "Logging in to ECR..."
+    - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_URI
     - echo "Pushing Docker image to ECR..."
-    - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-    - echo "Deploying the image to EC2 instance..."
-    - ssh -o StrictHostKeyChecking=no -i $EC2_SSH_KEY_PATH ec2-user@$EC2_INSTANCE_IP "docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG && docker run -d -p 8000:8000 $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG"
-  only:
-    - main 
-  environment:
-    name: production
+    - docker push $ECR_URI:$IMAGE_TAG

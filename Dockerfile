@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir --upgrade -r /requirements.txt
 
 COPY ./src /facial-recognition-backend/src
 
-CMD ["fastapi", "run", "src/main.py", "--port", "8000"]
+# CMD ["fastapi", "run", "src/main.py", "--port", "8000"]

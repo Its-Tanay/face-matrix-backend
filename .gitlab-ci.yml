@@ -14,7 +14,7 @@ build_image:
     - shell  
   script:
     - echo "Building Docker image..."
-    - docker build -t $ECR_URI:$IMAGE_TAG .
+    - docker build --no-cache -t $ECR_URI:$IMAGE_TAG .
 
 push_image:
   stage: push

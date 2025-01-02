@@ -1,6 +1,7 @@
 stages:
   - build
   - push
+  - cleanup
 
 variables:
   ECR_URI: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/my-repo
@@ -8,14 +9,32 @@ variables:
 
 build_image:
   stage: build
+  tags:
+    - dev-runner
+    - shell  
   script:
     - echo "Building Docker image..."
     - docker build -t $ECR_URI:$IMAGE_TAG .
+  when: on_failure
 
 push_image:
   stage: push
+  tags:
+    - your-runner-tag  
   script:
     - echo "Logging in to ECR..."
     - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_URI
     - echo "Pushing Docker image to ECR..."
     - docker push $ECR_URI:$IMAGE_TAG
+  when: on_failure 
+
+cleanup:
+  stage: cleanup
+  tags:
+    - your-runner-tag 
+  script:
+    - echo "Cleaning up Docker resources..."
+    - docker rmi $ECR_URI:$IMAGE_TAG || true  
+    - docker system prune -f || true        
+  only:
+    - always

@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: postgres-container
+    environment:
+      POSTGRES_USER: tanay
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: tanayhv
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  fastapi:
+    image: fastapi-server
+    container_name: fastapi-container
+    ports:
+      - "8080:8000"
+    networks:
+      - dev-network
+    depends_on:
+      - postgres
+
+  triton:
+    image: nvcr.io/nvidia/tritonserver:24.01-py3
+    container_name: triton-container
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
+    volumes:
+      - /home/ec2-user/face-matrix-backend/model_repository:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    command: >
+      tritonserver --model-repository=/models --log-verbose=1
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -11,29 +11,31 @@ build_image:
   stage: build
   tags:
     - dev-runner
-    - shell  
+    - shell
   script:
     - echo "Building Docker image..."
     - docker build --no-cache -t $ECR_URI:$IMAGE_TAG .
+  when: manual 
 
 push_image:
   stage: push
   tags:
     - dev-runner
-    - shell  
+    - shell
   script:
     - echo "Logging in to ECR..."
     - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_URI
     - echo "Pushing Docker image to ECR..."
     - docker push $ECR_URI:$IMAGE_TAG
+  when: manual 
 
 cleanup:
   stage: cleanup
   tags:
     - dev-runner
-    - shell  
+    - shell
   script:
     - echo "Cleaning up Docker resources..."
     - docker rmi $ECR_URI:$IMAGE_TAG || true
     - docker system prune -f || true
-  when: always
+  when: manual  

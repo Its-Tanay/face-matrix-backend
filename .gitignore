@@ -1,0 +1,8 @@
+.venv
+__pycache__
+config.py
+test_images
+.vscode
+lfw-deepfunneled-faces
+test-data
+.pytest_cache

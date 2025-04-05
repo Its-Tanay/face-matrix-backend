@@ -24,7 +24,7 @@ A backend system for facial recognition that detects faces, extracts features, m
 
 # Application Flow
 
-![image.png](Bootcamp%20task%201217e7c237cb80e59b18fb9a18b5c336/image.png)
+![image.png](docs-data/image.png)
 
 1. **Image Input**: User uploads an image.
 2. **Face Detection**: Detect a face in the image.
@@ -74,7 +74,7 @@ The  REST APIs will expose two key endpoints:
 
 - **API Endpoint**
     
-    ```json
+    ```jsx
     POST /api/v1/recognise_user
     Content-Type: multipart/form-data
     ```
@@ -237,7 +237,7 @@ All error responses are structured like this:
 }
 ```
 
-# Deployment Architecture
+# Ideated Deployment Architecture
 
 ![aws-infra.drawio (1).svg](docs-data/aws-infra.drawio_(1).svg)
 

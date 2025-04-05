@@ -5,7 +5,7 @@ EXPOSE 8000
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR /facial-recognition-backend
+WORKDIR /facial-matrix-backend
 
 COPY ./requirements.txt /requirements.txt
 
@@ -15,6 +15,6 @@ RUN apt-get update \
 
 RUN pip3 install --no-cache-dir --upgrade -r /requirements.txt
 
-COPY ./src /facial-recognition-backend/src
+COPY ./src /facial-matrix-backend/src
 
 CMD ["fastapi", "run", "src/main.py", "--port", "8000"]

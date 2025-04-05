@@ -24,7 +24,7 @@ A backend system for facial recognition that detects faces, extracts features, m
 
 # Application Flow
 
-![image.png](docs-data/image.png)
+![image.png](docs-data/app-flow.png)
 
 1. **Image Input**: User uploads an image.
 2. **Face Detection**: Detect a face in the image.
@@ -41,7 +41,7 @@ A backend system for facial recognition that detects faces, extracts features, m
 
 # Architecture
 
-![image.png](docs-data/image%201.png)
+![image.png](docs-data/arch.png)
 
 # System Components
 
@@ -239,7 +239,7 @@ All error responses are structured like this:
 
 # Ideated Deployment Architecture
 
-![aws-infra.drawio (1).svg](docs-data/aws-infra.drawio_(1).svg)
+![aws-infra.drawio (1).svg](docs-data/aws-infra.svg)
 
 # **Performance Benchmarking**
 
@@ -297,9 +297,66 @@ The load test was conducted using the following parameters:
 - **Dataset**: [Link](https://www.kaggle.com/datasets/jessicali9530/lfw-dataset?select=people.csv)
 - **Requests**: Each request contained a randomly selected image from the enrolled dataset.
 
-## Results
+### Results
 
-[load-test-new.pdf](docs-data/load-test-new.pdf)
+#### HTTP Performance Summary
+
+| Metric | Value |
+|--------|-------|
+| Max Throughput | 5.44 req/s |
+| HTTP Failures | 0.0120 req/s |
+| Avg. Response Time | 1.46 s |
+| 95% Response Time | 2.86 s |
+| Total Requests | 4,968 |
+| Failed Requests | 11 (0%) |
+| Unique URLs Tested | 6 |
+
+#### Top Slowest URLs (sorted by P95 response time)
+
+| Endpoint | Scenario | Method | Status | Count | Avg | P95 | Max |
+|----------|----------|--------|--------|-------|-----|-----|-----|
+| /api/recognise_user | scenario_12_users | POST | 200 | 1.72K | 2.11s | 3.44s | 5.80s |
+| /api/recognise_user | scenario_12_users | POST | 400 | 4 | 1.66s | 2.63s | 2.76s |
+| /api/recognise_user | scenario_8_users | POST | 200 | 1.65K | 1.46s | 2.59s | 4.06s |
+| /api/recognise_user | scenario_8_users | POST | 400 | 3 | 1.62s | 2.16s | 2.26s |
+| /api/recognise_user | scenario_4_users | POST | 400 | 4 | 1.09s | 2.03s | 2.13s |
+| /api/recognise_user | scenario_4_users | POST | 200 | 1.59K | 753ms | 1.33s | 2.73s |
+
+#### Final Evaluation
+
+A total of 9,936 checks were evaluated with 22 failures, resulting in a 99.8% overall success rate.
+
+| Check Name | Success Rate | Success Count | Fail Count |
+|------------|--------------|--------------|------------|
+| status is 200 (scenario_8_users) | 99.8% | 1,649 | 3 |
+| response matches schema (scenario_8_users) | 99.8% | 1,649 | 3 |
+| status is 200 (scenario_12_users) | 99.8% | 1,715 | 4 |
+| status is 200 (scenario_4_users) | 99.7% | 1,593 | 4 |
+| response matches schema (scenario_4_users) | 99.7% | 1,593 | 4 |
+| response matches schema (scenario_12_users) | 99.8% | 1,715 | 4 |
+
+#### Thresholds
+
+All performance expectations were met, with no defined thresholds being exceeded:
+- http_req_duration: p(95) < 3000ms ✓
+- http_req_failed: rate < 0.05 ✓
+
+### Performance by Scenario
+
+#### Response Time Peak
+- Maximum response time: 6s (at 12 VUs)
+- Average response time at peak: 3s
+- 95% of requests at peak: < 5s
+
+#### Throughput
+- Overall average: 5.5 req/s
+- Peak: 7.3 req/s (at 12 VUs)
+
+#### Bandwidth
+- Data sent peak: 66.5 KB/s (at 12 VUs)
+- Data received peak: 1.79 KB/s (at 12 VUs)
+- Total data sent: 44.1 MB
+- Total data received: 1.18 MB
 
 ## Resource Utilisation
 
@@ -311,4 +368,4 @@ The load test was conducted using the following parameters:
 
 - Started at ~150 MB and peaked at ~300 MB.
 
-![resource_consumption_2.png](docs-data/7cde919c-0cb2-423b-9938-a48f5961be68.png)
+![resource_consumption_2.png](docs-data/app-profile.png)

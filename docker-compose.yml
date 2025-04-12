@@ -1,19 +1,37 @@
-version: '3.9'
+version: "3.9"
 
 services:
   postgres:
     image: pgvector/pgvector:pg17
     container_name: postgres-container
     environment:
-      POSTGRES_USER: tanay
-      POSTGRES_PASSWORD: 12345
-      POSTGRES_DB: tanayhv
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - dev-network
+
+  triton:
+    image: nvcr.io/nvidia/tritonserver:24.01-py3
+    container_name: triton-container
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
+    volumes:
+      - ./model_repository:/models
+    command: >
+      tritonserver --model-repository=/models --log-verbose=1
+    networks:
+      - dev-network
+    # Optional GPU support — remove if not using GPU
+    # runtime: nvidia
+    # environment:
+    #   - NVIDIA_VISIBLE_DEVICES=all
 
   fastapi:
     image: fastapi-server
@@ -24,29 +42,14 @@ services:
       - dev-network
     depends_on:
       - postgres
+      - triton
+    environment:
+      TRITON_URL: ${TRITON_URL}
+      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
 
-  triton:
-    image: nvcr.io/nvidia/tritonserver:24.01-py3
-    container_name: triton-container
-    ports:
-      - "8000:8000"
-      - "8001:8001"
-      - "8002:8002"
-    volumes:
-      - /home/ec2-user/face-matrix-backend/model_repository:/models
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-    command: >
-      tritonserver --model-repository=/models --log-verbose=1
-    networks:
-      - dev-network
+volumes:
+  postgres_data:
 
 networks:
   dev-network:
     driver: bridge
-
-volumes:
-  postgres_data:

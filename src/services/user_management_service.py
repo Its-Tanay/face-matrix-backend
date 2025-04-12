@@ -1,7 +1,7 @@
 from database.db import Database
 from models.user import UserReq, UserRes
 import uuid
-import config
+from config import config
 from exception.exceptions import InternalServer
 
 class UserManagementService:

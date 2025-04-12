@@ -2,7 +2,7 @@ from database.db import Database
 import numpy as np
 from typing import Tuple, Optional, Dict, Any
 import uuid
-import config
+from config import config
 from exception.exceptions import ServiceUnavailable
 
 class SimilaritySearchService:

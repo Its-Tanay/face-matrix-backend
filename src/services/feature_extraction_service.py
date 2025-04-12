@@ -2,11 +2,11 @@ import torch
 import numpy as np
 import tritonclient.http as triton_client
 from exception.exceptions import BadRequest, InternalServer
-from config import TRITON_URL
+from config import config
 
 class FeatureExtractionService:
     def __init__(self, 
-                 triton_url: str = TRITON_URL, 
+                 triton_url: str = config.TRITON_URL, 
                  model_name: str = "facenet"):
         self.triton_client = triton_client.InferenceServerClient(url=triton_url)
         self.model_name = model_name

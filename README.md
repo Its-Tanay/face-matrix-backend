@@ -1,8 +1,64 @@
-# FACE MATRIX BACKEND
+# Face Matrix Backend
 
-# System overview
+A production-ready facial recognition backend built with FastAPI, PostgreSQL, and NVIDIA Triton. This system detects faces, extracts feature vectors, performs similarity matching, and handles user enrollment with a complete REST API.
 
-A backend system for facial recognition that detects faces, extracts features, matches them in a database, and supports user enrollment.
+## Getting Started
+
+### Prerequisites
+
+- Docker and Docker Compose installed on your system
+- (Optional) NVIDIA GPU with CUDA support for faster inference
+
+The system runs on CPU by default. GPU speeds up inference by ~3-5x but isn't required. Model files are included in the repository (`model_repository/facenet/`).
+
+### Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   cd face-matrix-backend
+   ```
+
+2. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your preferred settings
+   ```
+
+3. Build and run with Docker Compose:
+   ```bash
+   docker build -t fastapi-server .
+   docker-compose up -d
+   ```
+
+4. The API will be available at `http://localhost:8080`
+
+### Try it Out
+
+Test the recognition endpoint with any face image:
+```bash
+curl -X POST http://localhost:8080/api/v1/recognise_user \
+  -F "image=@/path/to/your/image.jpg"
+```
+
+If no match is found, you'll get a `req_id`. Use it to enroll:
+```bash
+curl -X POST http://localhost:8080/api/v1/add_user \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "birthdate": "1990-01-01",
+    "req_id": "your-req-id-here"
+  }'
+```
+
+### Services
+
+- **FastAPI Backend**: `http://localhost:8080`
+- **PostgreSQL Database**: `localhost:5432`
+- **Triton Inference Server**: `http://localhost:8000` (HTTP), `localhost:8001` (gRPC), `http://localhost:8002` (Metrics)
+
+---
 
 # System Requirements
 
@@ -58,8 +114,8 @@ A backend system for facial recognition that detects faces, extracts features, m
     - **Tech**: PostgreSQL.
     - **Role**: Persistent storage for user info and feature vectors, temporarily cache unmatched feature vectors.
 5. **Model Inference Server**:
-    - **Tech**: Nvidia’s Triton.
-    - **Role**: Serves ML models and handles inference requests, through a client server architecture. Manages model execution on GPUs.
+    - **Tech**: NVIDIA Triton Inference Server
+    - **Role**: Serves ML models via HTTP/gRPC. Handles batching, model versioning, and can run on CPU or GPU. Config files are in `model_repository/facenet/config.pbtxt`.
 
 # Technical Specifications
 
@@ -237,11 +293,19 @@ All error responses are structured like this:
 }
 ```
 
-# Ideated Deployment Architecture
-
-![aws-infra.drawio (1).svg](docs-data/aws-infra.svg)
-
 # **Performance Benchmarking**
+
+## **Test Environment**
+
+All benchmarks and load tests were conducted on the following hardware:
+
+- **Instance Type**: AWS g4dn.xlarge
+- **GPU**: 1x NVIDIA Tesla T4 (16 GB GPU memory)
+- **vCPUs**: 4 vCPUs
+- **RAM**: 16 GB
+- **Storage**: Amazon EBS
+
+This configuration represents a typical mid-range GPU instance suitable for production facial recognition workloads.
 
 ## **Dataset**
 
@@ -251,7 +315,7 @@ All error responses are structured like this:
     - Total number of unique identities: 5,750+
     - Images per identity: Varies, with multiple images for some identities.
 
-## **Benchmarking**
+## **Accuracy Benchmarking**
 
 1. **False Rejection Rate (FRR)**:
     - **Objective**: Measure how often the system fails to recognise the correct match for a given identity.
@@ -271,11 +335,20 @@ All error responses are structured like this:
 | FRR | 5650 | 1680 | 108 | 6.43 |
 | FAR | 2796 | 3557 | 149 | 4.19 |
 
+### Key Insights
+
+- **False Rejection Rate (FRR)**: 6.43% indicates that approximately 1 in 16 genuine users might need to retry authentication
+- **False Acceptance Rate (FAR)**: 4.19% shows strong security, with only ~4 in 100 false matches
+- These metrics can be tuned by adjusting the similarity threshold in the configuration
+- Results may vary based on image quality, lighting conditions, and face angles
+
+**Note**: The benchmarking scripts and test data are available in the `project-data/benchmarking/` directory for reproducibility.
+
 # Load Testing Summary
 
 ## Test Configuration
 
-The load test was conducted using the following parameters:
+The load test was conducted on the same hardware environment (AWS g4dn.xlarge with NVIDIA T4 GPU) using the following parameters:
 
 ### **Load Simulation**
 
@@ -369,3 +442,28 @@ All performance expectations were met, with no defined thresholds being exceeded
 - Started at ~150 MB and peaked at ~300 MB.
 
 ![resource_consumption_2.png](docs-data/app-profile.png)
+
+---
+
+## Common Issues
+
+**Triton won't start**: Check that `model_repository/facenet/1/model.onnx` exists. The model file should be ~94MB.
+
+**Database connection errors**: Wait 10-15 seconds after `docker-compose up` for Postgres to initialize. Check logs with `docker-compose logs postgres`.
+
+**Port conflicts**: If 8080, 5432, or 8000-8002 are in use, modify the ports in `docker-compose.yml`.
+
+**Slow inference on CPU**: First request is always slower (~2-3s). Subsequent requests should be under 1s. For faster performance, enable GPU support by uncommenting the runtime settings in `docker-compose.yml`.
+
+---
+
+## Architecture Notes
+
+The system is designed with modularity in mind:
+- Face detection and feature extraction models are served via Triton and can be swapped out
+- Vector similarity search uses PostgreSQL with pgvector, but the database layer is abstracted
+- The FastAPI backend handles orchestration and can be extended with additional endpoints
+
+## Contributing
+
+Contributions are welcome. Feel free to fork this project and adapt it to your needs.

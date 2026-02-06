@@ -29,7 +29,7 @@ services:
       tritonserver --model-repository=/models --log-verbose=1
     networks:
       - dev-network
-    # Optional GPU support — remove if not using GPU
+    # GPU support (optional) - Uncomment the lines below if you have NVIDIA GPU:
     # runtime: nvidia
     # environment:
     #   - NVIDIA_VISIBLE_DEVICES=all

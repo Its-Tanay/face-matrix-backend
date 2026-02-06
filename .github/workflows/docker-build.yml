@@ -1,0 +1,25 @@
+name: Build Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          echo "Building Docker image..."
+          docker build --no-cache -t face-matrix-backend:latest .
+
+      - name: Test Docker image
+        run: |
+          echo "Docker image built successfully"
+          docker images | grep face-matrix-backend

@@ -1,0 +1,27 @@
+name: "facenet"
+platform: "onnxruntime_onnx"
+max_batch_size: 1
+
+input [
+  {
+    name: "input0"
+    data_type: TYPE_FP32
+    format: FORMAT_NCHW
+    dims: [ 3, 160, 160 ]
+  }
+]
+output [
+  {
+    name: "output0"
+    data_type: TYPE_FP32
+    dims: [ 512 ]
+  }
+]
+instance_group [
+  {
+    kind: KIND_CPU
+  }
+]
+
+backend: "onnxruntime"
+default_model_filename: "model.onnx"

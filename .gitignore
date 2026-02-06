@@ -6,5 +6,4 @@ lfw-deepfunneled-faces
 test-data
 .pytest_cache
 project-data
-model_repository
 .env
